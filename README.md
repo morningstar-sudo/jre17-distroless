@@ -1,4 +1,4 @@
-# Java LTS Distroless Docker Images (17 / 21 / 25) — Zero CVE, Minimal JRE (~83 MB)
+# Java LTS Distroless Docker Images (17 / 21 / 25) — Zero CVE, Minimal JRE
 
 **Production-ready, zero-CVE Java base images for every LTS release (17, 21, 25)**: a jlink-trimmed Eclipse Temurin JRE on top of a Chainguard Wolfi distroless base. No shell, no package manager, no application code — just the Java runtime, running as a non-root user.
 
@@ -10,9 +10,9 @@ Rebuilt and pushed **daily** by GitHub Actions, so the images always carry the l
 
 | Tag | Java version |
 |---|---|
-| `17`, `latest` | Temurin 17 LTS |
+| `17` | Temurin 17 LTS |
 | `21` | Temurin 21 LTS |
-| `25` | Temurin 25 LTS |
+| `25`, `latest` | Temurin 25 LTS |
 
 Each also gets an immutable `<version>-<sha>-<date>` tag per daily build.
 
