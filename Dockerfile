@@ -1,4 +1,5 @@
-FROM eclipse-temurin:17-jdk AS jre-build
+ARG JAVA_VERSION=17
+FROM eclipse-temurin:${JAVA_VERSION}-jdk AS jre-build
 
 ARG JAVA_MODULES=java.base,java.logging,java.xml,java.naming,java.sql,java.net.http,java.management,java.security.jgss,java.instrument,jdk.crypto.ec,jdk.unsupported
 

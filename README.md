@@ -1,14 +1,24 @@
-# Java 17 Distroless Docker Image — Zero CVE, Minimal JRE (83 MB)
+# Java LTS Distroless Docker Images (17 / 21 / 25) — Zero CVE, Minimal JRE (~83 MB)
 
-**A production-ready, zero-CVE Java 17 base image**: a jlink-trimmed Eclipse Temurin 17 JRE on top of a Chainguard Wolfi distroless base. No shell, no package manager, no application code — just the Java runtime, running as a non-root user.
+**Production-ready, zero-CVE Java base images for every LTS release (17, 21, 25)**: a jlink-trimmed Eclipse Temurin JRE on top of a Chainguard Wolfi distroless base. No shell, no package manager, no application code — just the Java runtime, running as a non-root user.
 
 **Trivy scan result: 0 CVEs across all severities (CRITICAL / HIGH / MEDIUM / LOW).**
 
-Rebuilt and pushed **daily** by GitHub Actions, so the image always carries the latest Wolfi and Temurin security patches.
+Rebuilt and pushed **daily** by GitHub Actions, so the images always carry the latest Wolfi and Temurin security patches.
+
+## Tags
+
+| Tag | Java version |
+|---|---|
+| `17`, `latest` | Temurin 17 LTS |
+| `21` | Temurin 21 LTS |
+| `25` | Temurin 25 LTS |
+
+Each also gets an immutable `<version>-<sha>-<date>` tag per daily build.
 
 ## Why this image?
 
-| | `eclipse-temurin:17-jre` | `gcr.io/distroless/java17-debian12` | **this image** |
+| | `eclipse-temurin:<v>-jre` | `gcr.io/distroless/java<v>-debian12` | **this image** |
 |---|---|---|---|
 | Base OS | Ubuntu | Debian 12 | Wolfi (Chainguard) |
 | Typical Trivy findings | dozens | ~76 (2 CRITICAL)* | **0** |
@@ -23,14 +33,15 @@ Rebuilt and pushed **daily** by GitHub Actions, so the image always carries the 
 ## Quick start
 
 ```bash
-docker build -t jre17-distroless .
-docker run --rm jre17-distroless -version   # openjdk version "17.x"
+# pick your LTS: 17 (default), 21 or 25
+docker build --build-arg JAVA_VERSION=21 -t jre-distroless:21 .
+docker run --rm jre-distroless:21 -version   # openjdk version "21.x"
 ```
 
 ## Use as a base image for your Java app
 
 ```dockerfile
-FROM jre17-distroless
+FROM ghcr.io/morningstar-sudo/jre-distroless:21
 COPY app.jar /app/app.jar
 CMD ["-jar", "/app/app.jar"]
 ```
@@ -43,25 +54,25 @@ The default module set covers most server applications (no `java.desktop`). To t
 
 ```bash
 jdeps --print-module-deps --ignore-missing-deps app.jar
-docker build --build-arg JAVA_MODULES=<jdeps output> -t jre17-distroless .
+docker build --build-arg JAVA_MODULES=<jdeps output> --build-arg JAVA_VERSION=21 -t jre-distroless:21 .
 ```
 
 ## Verify the CVE scan yourself
 
 ```bash
-trivy image --severity CRITICAL,HIGH,MEDIUM,LOW jre17-distroless
+trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ghcr.io/morningstar-sudo/jre-distroless:21
 ```
 
 ## How it works
 
-1. **Build stage** (`eclipse-temurin:17-jdk`): `jlink` assembles a minimal JRE from the named modules with `--strip-debug --no-man-pages --no-header-files --compress=2`.
+1. **Build stage** (`eclipse-temurin:<JAVA_VERSION>-jdk`, one per LTS via a CI matrix): `jlink` assembles a minimal JRE from the named modules with `--strip-debug --no-man-pages --no-header-files --compress=2`.
 2. **Runtime stage** (`cgr.dev/chainguard/glibc-dynamic`): the JRE is copied to `/opt/java`. The base ships only glibc and CA certificates — no shell, no coreutils, no package manager, non-root by default. Attack surface is the JVM itself.
 
-CI (`.github/workflows/build.yml`) builds on every push and PR, on a daily cron, and on manual dispatch, pushing to the registry from `main`.
+CI (`.github/workflows/build.yml`) builds a matrix of Java 17 / 21 / 25 on every push and PR, on a daily cron, and on manual dispatch, pushing to the registry from `main`.
 
 ## FAQ
 
-**Why not just use `gcr.io/distroless/java17-debian12`?**
+**Why not just use `gcr.io/distroless/java17-debian12` (or java21)?**
 It ships graphics/font libraries (expat, glib, harfbuzz, libpng, lcms) for `java.desktop` that a headless server JRE never loads. In July 2026 it scanned at 76 CVEs, 2 CRITICAL. This image drops all of them.
 
 **Why can a Debian-based image never reach zero CVEs?**
@@ -77,11 +88,11 @@ Yes — any fat-jar server app. Check required modules with `jdeps` and pass the
 Rebuild regularly (the daily cron does this). For reproducible builds, pin both `FROM` images by digest (`@sha256:...`) and let Renovate/Dependabot bump the digests. Note the Chainguard free tier only offers the `latest` tag, which makes digest pinning more important.
 
 **Is it really distroless?**
-Yes: no shell, no package manager, no coreutils. `docker run --rm --entrypoint /bin/sh jre17-distroless` fails — there is nothing to execute except `java`.
+Yes: no shell, no package manager, no coreutils. `docker run --rm --entrypoint /bin/sh ghcr.io/morningstar-sudo/jre-distroless:21` fails — there is nothing to execute except `java`.
 
 ## Keywords
 
-Java 17 distroless Docker image · zero CVE Java base image · minimal JRE container · jlink custom runtime · Chainguard Wolfi Java · secure Java Docker image · Temurin 17 distroless · hardened JRE base image
+Java 17 21 25 distroless Docker image · zero CVE Java base image · minimal JRE container · jlink custom runtime · Chainguard Wolfi Java · secure Java Docker image · Temurin 17 21 25 LTS distroless · hardened JRE base image
 
 ## License
 
