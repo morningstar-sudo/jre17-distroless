@@ -15,6 +15,7 @@ FROM cgr.dev/chainguard/glibc-dynamic:latest
 
 ENV JAVA_HOME=/opt/java
 ENV PATH="$JAVA_HOME/bin:$PATH"
+ENV LANG=C.UTF-8
 COPY --from=jre-build /jre $JAVA_HOME
 
 USER nonroot
